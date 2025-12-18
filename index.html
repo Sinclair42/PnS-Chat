@@ -4,12 +4,48 @@
   <meta charset="UTF-8" />
   <title>표본을 이용한 모평균 추정 실험</title>
   <style>
-    body { font-family: 'Malgun Gothic', sans-serif; line-height: 1.6; }
-    button { margin: 4px; padding: 6px 12px; }
-    .box { border: 1px solid #ccc; padding: 10px; margin-top: 10px; }
-    table { border-collapse: collapse; margin-top: 10px; }
-    th, td { border: 1px solid #999; padding: 4px 8px; text-align: center; }
-  </style>
+:root {
+  --main:#2563eb;
+  --sub:#f1f5f9;
+  --accent:#22c55e;
+  --warn:#ef4444;
+}
+*{box-sizing:border-box;}
+body{
+  font-family:'Malgun Gothic',sans-serif;
+  margin:0; padding:0;
+  background:#f8fafc; color:#0f172a;
+}
+.container{
+  max-width:900px; margin:auto; padding:16px;
+}
+h2{color:var(--main); margin-bottom:8px;}
+p{margin-top:0;}
+button{
+  background:var(--main); color:white; border:none;
+  border-radius:8px; padding:10px 16px; margin:4px;
+  cursor:pointer; font-size:14px;
+}
+button:hover{opacity:.9;}
+.box{
+  background:white; border-radius:12px;
+  padding:16px; margin-top:16px;
+  box-shadow:0 4px 10px rgba(0,0,0,.06);
+}
+.result strong{color:var(--main);}
+.good{color:var(--accent); font-weight:bold;}
+bad{color:var(--warn); font-weight:bold;}
+
+table{width:100%; border-collapse:collapse; margin-top:10px;}
+th,td{border-bottom:1px solid #e5e7eb; padding:8px; font-size:14px;}
+th{background:var(--sub);}
+input[type=password]{padding:6px; border-radius:6px; border:1px solid #cbd5f5;}
+
+@media(max-width:600px){
+  button{width:100%; margin:6px 0;}
+  h2{font-size:20px;}
+}
+</style>
 </head>
 <body>
 
