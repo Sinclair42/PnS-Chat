@@ -68,111 +68,112 @@ input[type=password]{
 </style>
 </head>
 <body>
-
-<h2>표본을 이용한 모평균 추정 실험</h2>
-<p>
-이 활동은 <b>표본을 이용하여 모평균을 추정</b>하는 과정을 실험적으로 관찰하는 것이다.
-모집단 전체를 조사하기 어려울 때, 표본을 뽑아 표본평균과 신뢰구간을 통해 모평균을 추정할 수 있다.
-</p>
+<div class="container">
+<h2>확률과 통계 실험실 : 모평균 신뢰구간 탐구</h2>
+<p>이 실험은 표본을 반복 추출하여 <b>신뢰구간의 성질</b>을 관찰하는 통계 실험이다. 각 버튼은 하나의 실험을 의미한다.</p>
 
 <div class="box">
-  <b>① 표본의 크기 선택</b><br />
-  <button onclick="drawSample(10)">표본 10개</button>
-  <button onclick="drawSample(20)">표본 20개</button>
-  <button onclick="drawSample(30)">표본 30개</button>
+<b>① 표본 크기 선택</b><br>
+<button onclick="drawSample(10)">표본 10개</button>
+<button onclick="drawSample(20)">표본 20개</button>
+<button onclick="drawSample(30)">표본 30개</button>
 </div>
 
-<div class="box" id="result"></div>
+<div class="box result" id="result"></div>
 
 <div class="box">
-  <b>② 반복 실험 결과</b>
-  <p id="summary"></p>
-  <table id="history">
-    <tr>
-      <th>회차</th><th>표본 크기</th><th>95% 포함 여부</th><th>99% 포함 여부</th>
-    </tr>
-  </table>
+<b>② 신뢰구간 시각화</b>
+<canvas id="ciCanvas" height="120"></canvas>
 </div>
 
 <div class="box">
-  <b>③ 교사용 확인 (비밀번호 필요)</b><br />
-  비밀번호: <input type="password" id="pw" />
-  <button onclick="checkPW()">확인</button>
-  <p id="teacher"></p>
+<b>③ 실험 누적 통계</b>
+<p id="summary"></p>
+<canvas id="lenChart" height="200"></canvas>
 </div>
 
+<div class="box">
+<b>④ 최근 5회 실험 결과</b>
+<table id="history">
+<tr><th>회차</th><th>표본 크기</th><th>95%</th><th>99%</th></tr>
+</table>
+</div>
+
+<div class="box">
+<b>⑤ 교사용 확인</b><br>
+비밀번호 <input type="password" id="pw"> <button onclick="checkPW()">확인</button>
+<p id="teacher"></p>
+</div>
+</div>
+
+<script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
 <script>
-// 모집단 생성 (학생에게는 절대 공개되지 않음)
-const population = Array.from({length:200}, () => Math.floor(Math.random()*41)+60);
+const population = Array.from({length:200},()=>Math.floor(Math.random()*41)+60);
 const popMean = population.reduce((a,b)=>a+b,0)/population.length;
-const popStd = Math.sqrt(population.reduce((a,b)=>a+(b-popMean)**2,0)/population.length);
 
-let total95 = 0, hit95 = 0;
-let total99 = 0, hit99 = 0;
-let trial = 0;
+let trial=0, hit95=0, hit99=0;
+let lengths=[];
+
+const ctxLen = document.getElementById('lenChart').getContext('2d');
+const lenChart = new Chart(ctxLen,{
+ type:'line',
+ data:{labels:[],datasets:[{label:'95% 신뢰구간 길이',data:[]}]} ,
+ options:{responsive:true}
+});
 
 function drawSample(n){
-  // 비복원추출
-  const shuffled = [...population].sort(()=>Math.random()-0.5);
-  const sample = shuffled.slice(0,n);
+ trial++;
+ const shuffled=[...population].sort(()=>Math.random()-0.5);
+ const s=shuffled.slice(0,n);
+ const mean=s.reduce((a,b)=>a+b,0)/n;
+ const sd=Math.sqrt(s.reduce((a,b)=>a+(b-mean)**2,0)/(n-1));
+ const ci95=[mean-1.96*sd/Math.sqrt(n), mean+1.96*sd/Math.sqrt(n)];
+ const ci99=[mean-2.58*sd/Math.sqrt(n), mean+2.58*sd/Math.sqrt(n)];
+ const in95=(ci95[0]<=popMean && popMean<=ci95[1]);
+ const in99=(ci99[0]<=popMean && popMean<=ci99[1]);
+ if(in95) hit95++;
+ if(in99) hit99++;
 
-  const mean = sample.reduce((a,b)=>a+b,0)/n;
-  const std = Math.sqrt(sample.reduce((a,b)=>a+(b-mean)**2,0)/(n-1));
+ document.getElementById('result').innerHTML=`
+ <b>표본 추출 결과</b><br>
+ 표본평균과 표본표준편차를 이용하여 신뢰구간을 계산한다.<br><br>
+ <b>95% 신뢰구간</b><br>
+ x̄ ± 1.96·(s/√n) → [${ci95[0].toFixed(2)}, ${ci95[1].toFixed(2)}]<br>
+ 실제 모집단 평균은 이 구간 <span class="${in95?'good':'bad'}">${in95?'안에 있다':'안에 없다'}</span>.<br><br>
+ <b>99% 신뢰구간</b><br>
+ x̄ ± 2.58·(s/√n) → [${ci99[0].toFixed(2)}, ${ci99[1].toFixed(2)}]<br>
+ 실제 모집단 평균은 이 구간 <span class="${in99?'good':'bad'}">${in99?'안에 있다':'안에 없다'}</span>.
+ `;
 
-  const z95 = 1.96, z99 = 2.58;
-  const ci95 = [mean - z95*std/Math.sqrt(n), mean + z95*std/Math.sqrt(n)];
-  const ci99 = [mean - z99*std/Math.sqrt(n), mean + z99*std/Math.sqrt(n)];
+ const canvas=document.getElementById('ciCanvas');
+ const c=canvas.getContext('2d');
+ c.clearRect(0,0,canvas.width,canvas.height);
+ c.fillStyle='#38bdf8';
+ c.fillRect(50,50,200,10);
+ c.fillStyle='#22c55e';
+ if(in95) c.fillRect(140,45,4,20);
 
-  const in95 = (ci95[0] <= popMean && popMean <= ci95[1]);
-  const in99 = (ci99[0] <= popMean && popMean <= ci99[1]);
+ lenChart.data.labels.push(trial);
+ lenChart.data.datasets[0].data.push(ci95[1]-ci95[0]);
+ lenChart.update();
 
-  trial++;
-  total95++; total99++;
-  if(in95) hit95++;
-  if(in99) hit99++;
+ const table=document.getElementById('history');
+ const row=table.insertRow(1);
+ row.insertCell(0).innerText=trial;
+ row.insertCell(1).innerText=n;
+ row.insertCell(2).innerText=in95?'포함':'미포함';
+ row.insertCell(3).innerText=in99?'포함':'미포함';
+ while(table.rows.length>6) table.deleteRow(6);
 
-  document.getElementById('result').innerHTML = `
-  <b>표본 추출 결과</b><br />
-  표본 크기 n = ${n}<br /><br />
-
-  표본평균 = ${mean.toFixed(2)}<br />
-  표본표준편차 = ${std.toFixed(2)}<br /><br />
-
-  <b>95% 신뢰구간</b><br />
-  계산식: x̄ ± 1.96 × (s / √n)<br />
-  → [${ci95[0].toFixed(2)}, ${ci95[1].toFixed(2)}]<br />
-  실제 모집단 평균은 이 구간 <b>${in95 ? '안에 있다' : '안에 없다'}</b>.<br /><br />
-
-  <b>99% 신뢰구간</b><br />
-  계산식: x̄ ± 2.58 × (s / √n)<br />
-  → [${ci99[0].toFixed(2)}, ${ci99[1].toFixed(2)}]<br />
-  실제 모집단 평균은 이 구간 <b>${in99 ? '안에 있다' : '안에 없다'}</b>.
-  `;
-
-  const table = document.getElementById('history');
-  const row = table.insertRow(1);
-  row.insertCell(0).innerText = trial;
-  row.insertCell(1).innerText = n;
-  row.insertCell(2).innerText = in95 ? '포함' : '미포함';
-  row.insertCell(3).innerText = in99 ? '포함' : '미포함';
-
-  while(table.rows.length > 6) table.deleteRow(6);
-
-  document.getElementById('summary').innerText = 
-    `95% 신뢰구간 포함 비율: ${hit95}/${total95} = ${(hit95/total95*100).toFixed(1)}%
-     | 99% 신뢰구간 포함 비율: ${hit99}/${total99} = ${(hit99/total99*100).toFixed(1)}%`;
+ document.getElementById('summary').innerText=
+ `95% 포함 비율: ${(hit95/trial*100).toFixed(1)}% | 99% 포함 비율: ${(hit99/trial*100).toFixed(1)}%`;
 }
 
 function checkPW(){
-  const pw = document.getElementById('pw').value;
-  if(pw === 'OOOO'){
-    document.getElementById('teacher').innerText = 
-      `모집단 평균: ${popMean.toFixed(2)}, 모집단 표준편차: ${popStd.toFixed(2)}`;
-  } else {
-    document.getElementById('teacher').innerText = '비밀번호가 올바르지 않습니다.';
-  }
+ if(document.getElementById('pw').value==='OOOO'){
+  document.getElementById('teacher').innerText=`모집단 평균: ${popMean.toFixed(2)}`;
+ } else document.getElementById('teacher').innerText='비밀번호가 올바르지 않습니다.';
 }
 </script>
-
 </body>
 </html>
