@@ -4,46 +4,66 @@
   <meta charset="UTF-8" />
   <title>표본을 이용한 모평균 추정 실험</title>
   <style>
-:root {
-  --main:#2563eb;
-  --sub:#f1f5f9;
+@import url('https://fonts.googleapis.com/css2?family=Pretendard:wght@400;600;700&display=swap');
+:root{
+  --bg:#0f172a;
+  --card:#111827;
+  --soft:#1e293b;
+  --primary:#38bdf8;
   --accent:#22c55e;
-  --warn:#ef4444;
+  --warn:#fb7185;
+  --text:#e5e7eb;
+  --muted:#94a3b8;
 }
 *{box-sizing:border-box;}
 body{
-  font-family:'Malgun Gothic',sans-serif;
-  margin:0; padding:0;
-  background:#f8fafc; color:#0f172a;
+  margin:0; font-family:'Pretendard',sans-serif;
+  background:radial-gradient(circle at top, #1e293b, #020617);
+  color:var(--text);
 }
 .container{
-  max-width:900px; margin:auto; padding:16px;
+  max-width:960px; margin:auto; padding:20px;
 }
-h2{color:var(--main); margin-bottom:8px;}
-p{margin-top:0;}
-button{
-  background:var(--main); color:white; border:none;
-  border-radius:8px; padding:10px 16px; margin:4px;
-  cursor:pointer; font-size:14px;
+h2{
+  font-size:28px; margin-bottom:6px;
+  background:linear-gradient(90deg,var(--primary),#a5f3fc);
+  -webkit-background-clip:text; -webkit-text-fill-color:transparent;
 }
-button:hover{opacity:.9;}
+p{color:var(--muted);}
 .box{
-  background:white; border-radius:12px;
-  padding:16px; margin-top:16px;
-  box-shadow:0 4px 10px rgba(0,0,0,.06);
+  background:linear-gradient(180deg,var(--card),#020617);
+  border-radius:20px;
+  padding:20px; margin-top:20px;
+  box-shadow:0 20px 40px rgba(0,0,0,.4);
 }
-.result strong{color:var(--main);}
-.good{color:var(--accent); font-weight:bold;}
-bad{color:var(--warn); font-weight:bold;}
+button{
+  background:linear-gradient(135deg,var(--primary),#818cf8);
+  color:#020617; border:none;
+  border-radius:999px;
+  padding:12px 20px; margin:6px;
+  font-size:15px; font-weight:600;
+  cursor:pointer;
+}
+button:hover{transform:translateY(-2px); box-shadow:0 6px 20px rgba(56,189,248,.4);} 
 
-table{width:100%; border-collapse:collapse; margin-top:10px;}
-th,td{border-bottom:1px solid #e5e7eb; padding:8px; font-size:14px;}
-th{background:var(--sub);}
-input[type=password]{padding:6px; border-radius:6px; border:1px solid #cbd5f5;}
+.result strong{color:var(--primary);} 
+.good{color:var(--accent); font-weight:700;} 
+.bad{color:var(--warn); font-weight:700;} 
+
+table{width:100%; border-collapse:collapse; margin-top:12px;}
+th,td{padding:10px; font-size:14px;}
+th{color:#7dd3fc; border-bottom:1px solid var(--soft);} 
+td{border-bottom:1px solid #020617;} 
+
+input[type=password]{
+  background:#020617; color:var(--text);
+  border:1px solid var(--soft);
+  border-radius:10px; padding:8px;
+}
 
 @media(max-width:600px){
-  button{width:100%; margin:6px 0;}
-  h2{font-size:20px;}
+  h2{font-size:22px;}
+  button{width:100%;}
 }
 </style>
 </head>
