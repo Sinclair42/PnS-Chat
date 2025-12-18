@@ -1,0 +1,122 @@
+<!DOCTYPE html>
+<html lang="ko">
+<head>
+  <meta charset="UTF-8" />
+  <title>표본을 이용한 모평균 추정 실험</title>
+  <style>
+    body { font-family: 'Malgun Gothic', sans-serif; line-height: 1.6; }
+    button { margin: 4px; padding: 6px 12px; }
+    .box { border: 1px solid #ccc; padding: 10px; margin-top: 10px; }
+    table { border-collapse: collapse; margin-top: 10px; }
+    th, td { border: 1px solid #999; padding: 4px 8px; text-align: center; }
+  </style>
+</head>
+<body>
+
+<h2>표본을 이용한 모평균 추정 실험</h2>
+<p>
+이 활동은 <b>표본을 이용하여 모평균을 추정</b>하는 과정을 실험적으로 관찰하는 것이다.
+모집단 전체를 조사하기 어려울 때, 표본을 뽑아 표본평균과 신뢰구간을 통해 모평균을 추정할 수 있다.
+</p>
+
+<div class="box">
+  <b>① 표본의 크기 선택</b><br />
+  <button onclick="drawSample(10)">표본 10개</button>
+  <button onclick="drawSample(20)">표본 20개</button>
+  <button onclick="drawSample(30)">표본 30개</button>
+</div>
+
+<div class="box" id="result"></div>
+
+<div class="box">
+  <b>② 반복 실험 결과</b>
+  <p id="summary"></p>
+  <table id="history">
+    <tr>
+      <th>회차</th><th>표본 크기</th><th>95% 포함 여부</th><th>99% 포함 여부</th>
+    </tr>
+  </table>
+</div>
+
+<div class="box">
+  <b>③ 교사용 확인 (비밀번호 필요)</b><br />
+  비밀번호: <input type="password" id="pw" />
+  <button onclick="checkPW()">확인</button>
+  <p id="teacher"></p>
+</div>
+
+<script>
+// 모집단 생성 (학생에게는 절대 공개되지 않음)
+const population = Array.from({length:200}, () => Math.floor(Math.random()*41)+60);
+const popMean = population.reduce((a,b)=>a+b,0)/population.length;
+const popStd = Math.sqrt(population.reduce((a,b)=>a+(b-popMean)**2,0)/population.length);
+
+let total95 = 0, hit95 = 0;
+let total99 = 0, hit99 = 0;
+let trial = 0;
+
+function drawSample(n){
+  // 비복원추출
+  const shuffled = [...population].sort(()=>Math.random()-0.5);
+  const sample = shuffled.slice(0,n);
+
+  const mean = sample.reduce((a,b)=>a+b,0)/n;
+  const std = Math.sqrt(sample.reduce((a,b)=>a+(b-mean)**2,0)/(n-1));
+
+  const z95 = 1.96, z99 = 2.58;
+  const ci95 = [mean - z95*std/Math.sqrt(n), mean + z95*std/Math.sqrt(n)];
+  const ci99 = [mean - z99*std/Math.sqrt(n), mean + z99*std/Math.sqrt(n)];
+
+  const in95 = (ci95[0] <= popMean && popMean <= ci95[1]);
+  const in99 = (ci99[0] <= popMean && popMean <= ci99[1]);
+
+  trial++;
+  total95++; total99++;
+  if(in95) hit95++;
+  if(in99) hit99++;
+
+  document.getElementById('result').innerHTML = `
+  <b>표본 추출 결과</b><br />
+  표본 크기 n = ${n}<br /><br />
+
+  표본평균 = ${mean.toFixed(2)}<br />
+  표본표준편차 = ${std.toFixed(2)}<br /><br />
+
+  <b>95% 신뢰구간</b><br />
+  계산식: x̄ ± 1.96 × (s / √n)<br />
+  → [${ci95[0].toFixed(2)}, ${ci95[1].toFixed(2)}]<br />
+  실제 모집단 평균은 이 구간 <b>${in95 ? '안에 있다' : '안에 없다'}</b>.<br /><br />
+
+  <b>99% 신뢰구간</b><br />
+  계산식: x̄ ± 2.58 × (s / √n)<br />
+  → [${ci99[0].toFixed(2)}, ${ci99[1].toFixed(2)}]<br />
+  실제 모집단 평균은 이 구간 <b>${in99 ? '안에 있다' : '안에 없다'}</b>.
+  `;
+
+  const table = document.getElementById('history');
+  const row = table.insertRow(1);
+  row.insertCell(0).innerText = trial;
+  row.insertCell(1).innerText = n;
+  row.insertCell(2).innerText = in95 ? '포함' : '미포함';
+  row.insertCell(3).innerText = in99 ? '포함' : '미포함';
+
+  while(table.rows.length > 6) table.deleteRow(6);
+
+  document.getElementById('summary').innerText = 
+    `95% 신뢰구간 포함 비율: ${hit95}/${total95} = ${(hit95/total95*100).toFixed(1)}%
+     | 99% 신뢰구간 포함 비율: ${hit99}/${total99} = ${(hit99/total99*100).toFixed(1)}%`;
+}
+
+function checkPW(){
+  const pw = document.getElementById('pw').value;
+  if(pw === 'OOOO'){
+    document.getElementById('teacher').innerText = 
+      `모집단 평균: ${popMean.toFixed(2)}, 모집단 표준편차: ${popStd.toFixed(2)}`;
+  } else {
+    document.getElementById('teacher').innerText = '비밀번호가 올바르지 않습니다.';
+  }
+}
+</script>
+
+</body>
+</html>
